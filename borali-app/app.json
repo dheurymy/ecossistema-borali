@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "borali-app",
+    "slug": "borali-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/borali-splash.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/borali-splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/borali-splash.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.dheurymy.boraliapp"
+    },
+    "web": {
+      "favicon": "./assets/borali-splash.png"
+    }
+  }
+}

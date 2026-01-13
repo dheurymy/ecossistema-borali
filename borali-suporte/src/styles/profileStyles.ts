@@ -1,0 +1,156 @@
+import { StyleSheet } from 'react-native';
+import { theme } from './theme';
+
+export const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
+  scrollContent: {
+    padding: theme.spacing.lg,
+  },
+  header: {
+    alignItems: 'center',
+    marginBottom: theme.spacing.xl,
+    paddingTop: theme.spacing.xl,
+  },
+  avatarContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: theme.colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: theme.spacing.md,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 50,
+  },
+  cameraIconContainer: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: theme.colors.primary,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: theme.colors.white,
+  },
+  avatarText: {
+    fontSize: theme.fontSize.xxlarge,
+    fontWeight: theme.fontWeight.bold,
+    color: theme.colors.white,
+  },
+  userName: {
+    fontSize: theme.fontSize.xlarge,
+    fontWeight: theme.fontWeight.bold,
+    color: theme.colors.text,
+    marginBottom: theme.spacing.xs,
+  },
+  userEmail: {
+    fontSize: theme.fontSize.medium,
+    color: theme.colors.textSecondary,
+  },
+  userRole: {
+    fontSize: theme.fontSize.small,
+    color: theme.colors.primary,
+    marginTop: theme.spacing.xs,
+    fontWeight: theme.fontWeight.medium,
+  },
+  section: {
+    marginBottom: theme.spacing.lg,
+  },
+  sectionTitle: {
+    fontSize: theme.fontSize.large,
+    fontWeight: theme.fontWeight.semiBold,
+    color: theme.colors.text,
+    marginBottom: theme.spacing.md,
+  },
+  inputContainer: {
+    marginBottom: theme.spacing.md,
+  },
+  label: {
+    fontSize: theme.fontSize.small,
+    fontWeight: theme.fontWeight.medium,
+    color: theme.colors.textSecondary,
+    marginBottom: theme.spacing.xs,
+  },
+  input: {
+    height: 50,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.borderRadius.medium,
+    paddingHorizontal: theme.spacing.md,
+    fontSize: theme.fontSize.medium,
+    backgroundColor: theme.colors.white,
+    color: theme.colors.text,
+  },
+  inputDisabled: {
+    backgroundColor: '#f5f5f5',
+    color: theme.colors.textSecondary,
+  },
+  buttonContainer: {
+    marginTop: theme.spacing.md,
+  },
+  saveButton: {
+    backgroundColor: theme.colors.primary,
+    paddingVertical: theme.spacing.md,
+    borderRadius: theme.borderRadius.medium,
+    alignItems: 'center',
+    marginBottom: theme.spacing.sm,
+  },
+  saveButtonText: {
+    color: theme.colors.white,
+    fontSize: theme.fontSize.medium,
+    fontWeight: theme.fontWeight.semiBold,
+  },
+  cancelButton: {
+    backgroundColor: theme.colors.white,
+    paddingVertical: theme.spacing.md,
+    borderRadius: theme.borderRadius.medium,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    marginBottom: theme.spacing.sm,
+  },
+  cancelButtonText: {
+    color: theme.colors.text,
+    fontSize: theme.fontSize.medium,
+    fontWeight: theme.fontWeight.medium,
+  },
+  editButton: {
+    backgroundColor: theme.colors.white,
+    paddingVertical: theme.spacing.md,
+    borderRadius: theme.borderRadius.medium,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: theme.colors.primary,
+    marginBottom: theme.spacing.md,
+  },
+  editButtonText: {
+    color: theme.colors.primary,
+    fontSize: theme.fontSize.medium,
+    fontWeight: theme.fontWeight.semiBold,
+  },
+  logoutButton: {
+    backgroundColor: theme.colors.white,
+    paddingVertical: theme.spacing.md,
+    borderRadius: theme.borderRadius.medium,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: theme.colors.error,
+    marginTop: theme.spacing.md,
+  },
+  logoutButtonText: {
+    color: theme.colors.error,
+    fontSize: theme.fontSize.medium,
+    fontWeight: theme.fontWeight.semiBold,
+  },
+});

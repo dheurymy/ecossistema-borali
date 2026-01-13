@@ -1,0 +1,42 @@
+{
+  "expo": {
+    "name": "borali-suporte",
+    "slug": "borali-suporte",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/borali-splash.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.borali.suporte",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/borali-splash.png",
+        "backgroundColor": "#ffffff"
+      },
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "@react-native-community/datetimepicker"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "cb5cecf6-7260-453f-a64d-4147b0b06ada"
+      }
+    }
+  }
+}
