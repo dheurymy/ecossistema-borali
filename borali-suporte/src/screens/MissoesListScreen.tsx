@@ -12,23 +12,22 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { theme } from '../styles/theme';
-import conquistasService, { Conquista } from '../services/conquistasService';
+import missoesService, { Missao } from '../services/missoesService';
 import { errorService } from '../services/errorService';
 
-type ConquistasListScreenProps = {
+type MissoesListScreenProps = {
   navigation: NativeStackNavigationProp<any>;
 };
 
-export default function ConquistasListScreen({ navigation }: ConquistasListScreenProps) {
-  const [conquistas, setConquistas] = useState<Conquista[]>([]);
+export default function MissoesListScreen({ navigation }: MissoesListScreenProps) {
+  const [missoes, setMissoes] = useState<Missao[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [filtroTipo, setFiltroTipo] = useState<string>('');
-  const [filtroCategoria, setFiltroCategoria] = useState<string>('');
 
-  const carregarConquistas = useCallback(async (pageNum: number = 1, refresh: boolean = false) => {
+  const carregarMissoes = useCallback(async (pageNum: number = 1, refresh: boolean = false) => {
     try {
       if (refresh) {
         setRefreshing(true);
@@ -36,17 +35,16 @@ export default function ConquistasListScreen({ navigation }: ConquistasListScree
         setLoading(true);
       }
       
-      const resultado = await conquistasService.listar({
+      const resultado = await missoesService.listar({
         tipo: filtroTipo || undefined,
-        categoria: filtroCategoria || undefined,
         page: pageNum,
         limit: 20
       });
       
       if (pageNum === 1) {
-        setConquistas(resultado.conquistas);
+        setMissoes(resultado.missoes);
       } else {
-        setConquistas(prev => [...prev, ...resultado.conquistas]);
+        setMissoes(prev => [...prev, ...resultado.missoes]);
       }
       
       setHasMore(pageNum < resultado.totalPaginas);
@@ -57,29 +55,38 @@ export default function ConquistasListScreen({ navigation }: ConquistasListScree
       setLoading(false);
       setRefreshing(false);
     }
-  }, [filtroTipo, filtroCategoria]);
+  }, [filtroTipo]);
 
   useFocusEffect(
     useCallback(() => {
-      carregarConquistas(1);
-    }, [filtroTipo, filtroCategoria])
+      carregarMissoes(1);
+    }, [filtroTipo])
   );
 
   const handleRefresh = () => {
     setRefreshing(true);
-    carregarConquistas(1, true);
+    carregarMissoes(1, true);
   };
 
   const handleLoadMore = () => {
     if (!loading && hasMore && page > 0) {
-      carregarConquistas(page + 1);
+      carregarMissoes(page + 1);
     }
   };
 
   const handleAlternarStatus = async (id: string) => {
     try {
-      await conquistasService.alternarStatus(id);
-      carregarConquistas(1);
+      await missoesService.alternarStatus(id);
+      carregarMissoes(1);
+    } catch (error) {
+      errorService.showError(error);
+    }
+  };
+
+  const handleAlternarDestaque = async (id: string) => {
+    try {
+      await missoesService.alternarDestaque(id);
+      carregarMissoes(1);
     } catch (error) {
       errorService.showError(error);
     }
@@ -88,11 +95,11 @@ export default function ConquistasListScreen({ navigation }: ConquistasListScree
   const handleDeletar = async (id: string) => {
     errorService.showConfirmation(
       'Confirmar exclusão',
-      'Tem certeza que deseja deletar esta conquista?',
+      'Tem certeza que deseja deletar esta missão?',
       async () => {
         try {
-          await conquistasService.deletar(id);
-          carregarConquistas(1);
+          await missoesService.deletar(id);
+          carregarMissoes(1);
         } catch (error) {
           errorService.showError(error);
         }
@@ -102,23 +109,42 @@ export default function ConquistasListScreen({ navigation }: ConquistasListScree
 
   const getTipoCor = (tipo: string) => {
     const cores = {
-      bronze: '#CD7F32',
-      prata: '#C0C0C0',
-      ouro: '#FFD700',
-      platina: '#E5E4E2',
-      diamante: '#B9F2FF'
+      diaria: '#4CAF50',
+      semanal: '#2196F3',
+      mensal: '#9C27B0',
+      especial: '#FF9800'
     };
     return cores[tipo as keyof typeof cores] || theme.colors.primary;
   };
 
-  const renderConquista = ({ item }: { item: Conquista }) => (
+  const getTipoIcone = (tipo: string) => {
+    const icones = {
+      diaria: 'today',
+      semanal: 'calendar',
+      mensal: 'calendar-outline',
+      especial: 'star'
+    };
+    return icones[tipo as keyof typeof icones] || 'checkmark-circle';
+  };
+
+  const formatarData = (data: string) => {
+    if (!data) return '';
+    const d = new Date(data);
+    return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  };
+
+  const renderMissao = ({ item }: { item: Missao }) => (
     <TouchableOpacity
       style={styles.card}
-      onPress={() => navigation.navigate('ConquistaForm', { conquistaId: item._id })}
+      onPress={() => navigation.navigate('MissaoForm', { missaoId: item._id })}
     >
       <View style={styles.cardHeader}>
         <View style={styles.cardLeft}>
-          <Ionicons name={item.icone as any} size={24} color={theme.colors.primary} />
+          <Ionicons 
+            name={getTipoIcone(item.tipo) as any} 
+            size={24} 
+            color={getTipoCor(item.tipo)} 
+          />
           <View style={styles.cardInfo}>
             <Text style={styles.cardTitle} numberOfLines={1}>
               {item.titulo}
@@ -126,8 +152,13 @@ export default function ConquistasListScreen({ navigation }: ConquistasListScree
             <Text style={styles.cardCategoria}>{item.categoria}</Text>
           </View>
         </View>
-        <View style={[styles.tipoBadge, { backgroundColor: getTipoCor(item.tipo) }]}>
-          <Text style={styles.tipoText}>{item.tipo.toUpperCase()}</Text>
+        <View style={styles.badgesContainer}>
+          <View style={[styles.tipoBadge, { backgroundColor: getTipoCor(item.tipo) }]}>
+            <Text style={styles.tipoText}>{item.tipo.toUpperCase()}</Text>
+          </View>
+          {item.destaque && (
+            <Ionicons name="star" size={20} color="#FFD700" style={{ marginLeft: 4 }} />
+          )}
         </View>
       </View>
 
@@ -140,10 +171,12 @@ export default function ConquistasListScreen({ navigation }: ConquistasListScree
           <Ionicons name="trophy-outline" size={14} color={theme.colors.textSecondary} />
           <Text style={styles.detailText}>{item.recompensa.pontos} pontos</Text>
         </View>
-        {item.recompensa.bonus && (
+        {item.validade && (
           <View style={styles.detailItem}>
-            <Ionicons name="gift-outline" size={14} color={theme.colors.textSecondary} />
-            <Text style={styles.detailText}>{item.recompensa.bonus}</Text>
+            <Ionicons name="calendar-outline" size={14} color={theme.colors.textSecondary} />
+            <Text style={styles.detailText}>
+              {formatarData(item.validade.inicio)} - {formatarData(item.validade.fim)}
+            </Text>
           </View>
         )}
       </View>
@@ -164,11 +197,20 @@ export default function ConquistasListScreen({ navigation }: ConquistasListScree
         </TouchableOpacity>
 
         <TouchableOpacity
+          style={[styles.actionButton, { backgroundColor: item.destaque ? '#FFD700' : '#9E9E9E' }]}
+          onPress={() => handleAlternarDestaque(item._id)}
+        >
+          <Ionicons name="star" size={20} color="#fff" />
+          <Text style={styles.actionButtonText}>
+            {item.destaque ? 'Destacado' : 'Destaque'}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
           style={[styles.actionButton, styles.deleteButton]}
           onPress={() => handleDeletar(item._id)}
         >
           <Ionicons name="trash-outline" size={20} color="#fff" />
-          <Text style={styles.actionButtonText}>Excluir</Text>
         </TouchableOpacity>
       </View>
     </TouchableOpacity>
@@ -185,10 +227,10 @@ export default function ConquistasListScreen({ navigation }: ConquistasListScree
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Conquistas</Text>
+        <Text style={styles.title}>Missões</Text>
         <TouchableOpacity
           style={styles.addButton}
-          onPress={() => navigation.navigate('ConquistaForm')}
+          onPress={() => navigation.navigate('MissaoForm')}
         >
           <Ionicons name="add" size={24} color={theme.colors.white} />
         </TouchableOpacity>
@@ -200,10 +242,10 @@ export default function ConquistasListScreen({ navigation }: ConquistasListScree
           onPress={() => setFiltroTipo('')}
         >
           <Text style={[styles.filterButtonText, filtroTipo === '' && styles.filterButtonTextActive]}>
-            Todos
+            Todas
           </Text>
         </TouchableOpacity>
-        {['bronze', 'prata', 'ouro', 'platina'].map((tipo) => (
+        {['diaria', 'semanal', 'mensal', 'especial'].map((tipo) => (
           <TouchableOpacity
             key={tipo}
             style={[styles.filterButton, filtroTipo === tipo && styles.filterButtonActive]}
@@ -217,8 +259,8 @@ export default function ConquistasListScreen({ navigation }: ConquistasListScree
       </View>
 
       <FlatList
-        data={conquistas}
-        renderItem={renderConquista}
+        data={missoes}
+        renderItem={renderMissao}
         keyExtractor={(item) => item._id}
         contentContainerStyle={styles.listContent}
         refreshControl={
@@ -232,9 +274,9 @@ export default function ConquistasListScreen({ navigation }: ConquistasListScree
         onEndReachedThreshold={0.5}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Ionicons name="trophy-outline" size={64} color={theme.colors.border} />
+            <Ionicons name="calendar-outline" size={64} color={theme.colors.border} />
             <Text style={styles.emptyText}>
-              Nenhuma conquista encontrada{'\n'}
+              Nenhuma missão encontrada{'\n'}
               Toque no + para criar a primeira!
             </Text>
           </View>
@@ -362,6 +404,10 @@ const styles = StyleSheet.create({
     color: theme.colors.textSecondary,
     textTransform: 'capitalize',
   },
+  badgesContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   tipoBadge: {
     paddingHorizontal: 10,
     paddingVertical: 4,
@@ -382,6 +428,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 16,
     marginBottom: 12,
+    flexWrap: 'wrap',
   },
   detailItem: {
     flexDirection: 'row',
@@ -414,6 +461,8 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     backgroundColor: '#F44336',
+    flex: 0,
+    paddingHorizontal: 16,
   },
   emptyContainer: {
     alignItems: 'center',

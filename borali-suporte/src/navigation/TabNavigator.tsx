@@ -3,11 +3,9 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import DashboardScreen from '../screens/DashboardScreen';
 import ProfileScreen from '../screens/ProfileScreen';
-import PontosStackNavigator from './PontosStackNavigator';
 import AnalyticsStackNavigator from './AnalyticsStackNavigator';
-import NegociosStackNavigator from './NegociosStackNavigator';
-import CuponsStackNavigator from './CuponsStackNavigator';
-import UsersStackNavigator from './UsersStackNavigator';
+import GestaoStackNavigator from './GestaoStackNavigator';
+import GamificacaoStackNavigator from './GamificacaoStackNavigator';
 import { theme } from '../styles/theme';
 
 const Tab = createBottomTabNavigator();
@@ -36,49 +34,29 @@ export default function TabNavigator() {
         name="Dashboard"
         component={DashboardScreen}
         options={{
-          tabBarLabel: 'Dashboard',
+          tabBarLabel: 'Início',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="home" size={size} color={color} />
           ),
         }}
       />
       <Tab.Screen
-        name="Users"
-        component={UsersStackNavigator}
+        name="Gestao"
+        component={GestaoStackNavigator}
         options={{
-          tabBarLabel: 'Usuários',
+          tabBarLabel: 'Gestão',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="people" size={size} color={color} />
+            <Ionicons name="briefcase" size={size} color={color} />
           ),
         }}
       />
       <Tab.Screen
-        name="Pontos"
-        component={PontosStackNavigator}
+        name="Gamificacao"
+        component={GamificacaoStackNavigator}
         options={{
-          tabBarLabel: 'Pontos',
+          tabBarLabel: 'Jogos',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="map" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Negocios"
-        component={NegociosStackNavigator}
-        options={{
-          tabBarLabel: 'Negócios',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="business" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Cupons"
-        component={CuponsStackNavigator}
-        options={{
-          tabBarLabel: 'Cupons',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="pricetag" size={size} color={color} />
+            <Ionicons name="game-controller" size={size} color={color} />
           ),
         }}
       />

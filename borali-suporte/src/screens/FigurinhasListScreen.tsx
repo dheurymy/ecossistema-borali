@@ -7,28 +7,28 @@ import {
   RefreshControl,
   ActivityIndicator,
   StyleSheet,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { theme } from '../styles/theme';
-import conquistasService, { Conquista } from '../services/conquistasService';
+import figurinhasService, { Figurinha } from '../services/figurinhasService';
 import { errorService } from '../services/errorService';
 
-type ConquistasListScreenProps = {
+type FigurinhasListScreenProps = {
   navigation: NativeStackNavigationProp<any>;
 };
 
-export default function ConquistasListScreen({ navigation }: ConquistasListScreenProps) {
-  const [conquistas, setConquistas] = useState<Conquista[]>([]);
+export default function FigurinhasListScreen({ navigation }: FigurinhasListScreenProps) {
+  const [figurinhas, setFigurinhas] = useState<Figurinha[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [filtroTipo, setFiltroTipo] = useState<string>('');
   const [filtroCategoria, setFiltroCategoria] = useState<string>('');
 
-  const carregarConquistas = useCallback(async (pageNum: number = 1, refresh: boolean = false) => {
+  const carregarFigurinhas = useCallback(async (pageNum: number = 1, refresh: boolean = false) => {
     try {
       if (refresh) {
         setRefreshing(true);
@@ -36,17 +36,16 @@ export default function ConquistasListScreen({ navigation }: ConquistasListScree
         setLoading(true);
       }
       
-      const resultado = await conquistasService.listar({
-        tipo: filtroTipo || undefined,
+      const resultado = await figurinhasService.listar({
         categoria: filtroCategoria || undefined,
         page: pageNum,
         limit: 20
       });
       
       if (pageNum === 1) {
-        setConquistas(resultado.conquistas);
+        setFigurinhas(resultado.figurinhas);
       } else {
-        setConquistas(prev => [...prev, ...resultado.conquistas]);
+        setFigurinhas(prev => [...prev, ...resultado.figurinhas]);
       }
       
       setHasMore(pageNum < resultado.totalPaginas);
@@ -57,29 +56,29 @@ export default function ConquistasListScreen({ navigation }: ConquistasListScree
       setLoading(false);
       setRefreshing(false);
     }
-  }, [filtroTipo, filtroCategoria]);
+  }, [filtroCategoria]);
 
   useFocusEffect(
     useCallback(() => {
-      carregarConquistas(1);
-    }, [filtroTipo, filtroCategoria])
+      carregarFigurinhas(1);
+    }, [filtroCategoria])
   );
 
   const handleRefresh = () => {
     setRefreshing(true);
-    carregarConquistas(1, true);
+    carregarFigurinhas(1, true);
   };
 
   const handleLoadMore = () => {
     if (!loading && hasMore && page > 0) {
-      carregarConquistas(page + 1);
+      carregarFigurinhas(page + 1);
     }
   };
 
   const handleAlternarStatus = async (id: string) => {
     try {
-      await conquistasService.alternarStatus(id);
-      carregarConquistas(1);
+      await figurinhasService.alternarStatus(id);
+      carregarFigurinhas(1);
     } catch (error) {
       errorService.showError(error);
     }
@@ -88,11 +87,11 @@ export default function ConquistasListScreen({ navigation }: ConquistasListScree
   const handleDeletar = async (id: string) => {
     errorService.showConfirmation(
       'Confirmar exclusão',
-      'Tem certeza que deseja deletar esta conquista?',
+      'Tem certeza que deseja deletar esta figurinha?',
       async () => {
         try {
-          await conquistasService.deletar(id);
-          carregarConquistas(1);
+          await figurinhasService.deletar(id);
+          carregarFigurinhas(1);
         } catch (error) {
           errorService.showError(error);
         }
@@ -100,79 +99,109 @@ export default function ConquistasListScreen({ navigation }: ConquistasListScree
     );
   };
 
-  const getTipoCor = (tipo: string) => {
+  const getCategoriaCor = (categoria: string) => {
     const cores = {
-      bronze: '#CD7F32',
-      prata: '#C0C0C0',
-      ouro: '#FFD700',
-      platina: '#E5E4E2',
-      diamante: '#B9F2FF'
+      comum: '#9E9E9E',
+      incomum: '#4CAF50',
+      rara: '#2196F3',
+      epica: '#9C27B0',
+      lendaria: '#FF9800'
     };
-    return cores[tipo as keyof typeof cores] || theme.colors.primary;
+    return cores[categoria as keyof typeof cores] || theme.colors.primary;
   };
 
-  const renderConquista = ({ item }: { item: Conquista }) => (
-    <TouchableOpacity
-      style={styles.card}
-      onPress={() => navigation.navigate('ConquistaForm', { conquistaId: item._id })}
-    >
-      <View style={styles.cardHeader}>
-        <View style={styles.cardLeft}>
-          <Ionicons name={item.icone as any} size={24} color={theme.colors.primary} />
-          <View style={styles.cardInfo}>
-            <Text style={styles.cardTitle} numberOfLines={1}>
-              {item.titulo}
-            </Text>
-            <Text style={styles.cardCategoria}>{item.categoria}</Text>
+  const getCategoriaIcone = (categoria: string) => {
+    const icones = {
+      comum: 'document',
+      incomum: 'star-outline',
+      rara: 'star-half',
+      epica: 'star',
+      lendaria: 'sparkles'
+    };
+    return icones[categoria as keyof typeof icones] || 'image';
+  };
+
+  const renderFigurinha = ({ item }: { item: Figurinha }) => {
+    const pontoNome = typeof item.pontoInteresse === 'object' && item.pontoInteresse 
+      ? item.pontoInteresse.nome 
+      : 'Sem ponto associado';
+
+    return (
+      <TouchableOpacity
+        style={styles.card}
+        onPress={() => navigation.navigate('FigurinhaForm', { figurinhaId: item._id })}
+      >
+        <View style={styles.cardHeader}>
+          <View style={styles.cardLeft}>
+            <View style={[styles.numeroContainer, { backgroundColor: getCategoriaCor(item.categoria) }]}>
+              <Text style={styles.numeroText}>#{item.numero}</Text>
+            </View>
+            <View style={styles.cardInfo}>
+              <Text style={styles.cardTitle} numberOfLines={1}>
+                {item.nome}
+              </Text>
+              <Text style={styles.cardPonto} numberOfLines={1}>
+                {pontoNome}
+              </Text>
+            </View>
+          </View>
+          <View style={styles.badgesContainer}>
+            <View style={[styles.categoriaBadge, { backgroundColor: getCategoriaCor(item.categoria) }]}>
+              <Ionicons name={getCategoriaIcone(item.categoria) as any} size={12} color={theme.colors.white} />
+              <Text style={styles.categoriaText}>{item.categoria.toUpperCase()}</Text>
+            </View>
           </View>
         </View>
-        <View style={[styles.tipoBadge, { backgroundColor: getTipoCor(item.tipo) }]}>
-          <Text style={styles.tipoText}>{item.tipo.toUpperCase()}</Text>
-        </View>
-      </View>
 
-      <Text style={styles.cardDescricao} numberOfLines={2}>
-        {item.descricao}
-      </Text>
+        <Text style={styles.cardDescricao} numberOfLines={2}>
+          {item.descricao}
+        </Text>
 
-      <View style={styles.cardDetails}>
-        <View style={styles.detailItem}>
-          <Ionicons name="trophy-outline" size={14} color={theme.colors.textSecondary} />
-          <Text style={styles.detailText}>{item.recompensa.pontos} pontos</Text>
-        </View>
-        {item.recompensa.bonus && (
+        <View style={styles.cardDetails}>
           <View style={styles.detailItem}>
-            <Ionicons name="gift-outline" size={14} color={theme.colors.textSecondary} />
-            <Text style={styles.detailText}>{item.recompensa.bonus}</Text>
+            <Ionicons name="trophy-outline" size={14} color={theme.colors.textSecondary} />
+            <Text style={styles.detailText}>{item.pontuacao} pontos</Text>
           </View>
-        )}
-      </View>
+          {item.serie && (
+            <View style={styles.detailItem}>
+              <Ionicons name="albums-outline" size={14} color={theme.colors.textSecondary} />
+              <Text style={styles.detailText}>Série: {item.serie}</Text>
+            </View>
+          )}
+          {item.estatisticas && (
+            <View style={styles.detailItem}>
+              <Ionicons name="people-outline" size={14} color={theme.colors.textSecondary} />
+              <Text style={styles.detailText}>{item.estatisticas.totalObtida || 0} obtidas</Text>
+            </View>
+          )}
+        </View>
 
-      <View style={styles.actionsContainer}>
-        <TouchableOpacity
-          style={[styles.actionButton, { backgroundColor: item.ativo ? '#4CAF50' : '#FF9800' }]}
-          onPress={() => handleAlternarStatus(item._id)}
-        >
-          <Ionicons
-            name={item.ativo ? 'checkmark-circle' : 'pause-circle'}
-            size={20}
-            color="#fff"
-          />
-          <Text style={styles.actionButtonText}>
-            {item.ativo ? 'Ativo' : 'Inativo'}
-          </Text>
-        </TouchableOpacity>
+        <View style={styles.actionsContainer}>
+          <TouchableOpacity
+            style={[styles.actionButton, { backgroundColor: item.ativo ? '#4CAF50' : '#FF9800' }]}
+            onPress={() => handleAlternarStatus(item._id)}
+          >
+            <Ionicons
+              name={item.ativo ? 'checkmark-circle' : 'pause-circle'}
+              size={20}
+              color="#fff"
+            />
+            <Text style={styles.actionButtonText}>
+              {item.ativo ? 'Ativo' : 'Inativo'}
+            </Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.actionButton, styles.deleteButton]}
-          onPress={() => handleDeletar(item._id)}
-        >
-          <Ionicons name="trash-outline" size={20} color="#fff" />
-          <Text style={styles.actionButtonText}>Excluir</Text>
-        </TouchableOpacity>
-      </View>
-    </TouchableOpacity>
-  );
+          <TouchableOpacity
+            style={[styles.actionButton, styles.deleteButton]}
+            onPress={() => handleDeletar(item._id)}
+          >
+            <Ionicons name="trash-outline" size={20} color="#fff" />
+            <Text style={styles.actionButtonText}>Excluir</Text>
+          </TouchableOpacity>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   if (loading && page === 1) {
     return (
@@ -185,10 +214,10 @@ export default function ConquistasListScreen({ navigation }: ConquistasListScree
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Conquistas</Text>
+        <Text style={styles.title}>Figurinhas</Text>
         <TouchableOpacity
           style={styles.addButton}
-          onPress={() => navigation.navigate('ConquistaForm')}
+          onPress={() => navigation.navigate('FigurinhaForm')}
         >
           <Ionicons name="add" size={24} color={theme.colors.white} />
         </TouchableOpacity>
@@ -196,29 +225,29 @@ export default function ConquistasListScreen({ navigation }: ConquistasListScree
 
       <View style={styles.filtersContainer}>
         <TouchableOpacity
-          style={[styles.filterButton, filtroTipo === '' && styles.filterButtonActive]}
-          onPress={() => setFiltroTipo('')}
+          style={[styles.filterButton, filtroCategoria === '' && styles.filterButtonActive]}
+          onPress={() => setFiltroCategoria('')}
         >
-          <Text style={[styles.filterButtonText, filtroTipo === '' && styles.filterButtonTextActive]}>
-            Todos
+          <Text style={[styles.filterButtonText, filtroCategoria === '' && styles.filterButtonTextActive]}>
+            Todas
           </Text>
         </TouchableOpacity>
-        {['bronze', 'prata', 'ouro', 'platina'].map((tipo) => (
+        {['comum', 'incomum', 'rara', 'epica', 'lendaria'].map((categoria) => (
           <TouchableOpacity
-            key={tipo}
-            style={[styles.filterButton, filtroTipo === tipo && styles.filterButtonActive]}
-            onPress={() => setFiltroTipo(tipo)}
+            key={categoria}
+            style={[styles.filterButton, filtroCategoria === categoria && styles.filterButtonActive]}
+            onPress={() => setFiltroCategoria(categoria)}
           >
-            <Text style={[styles.filterButtonText, filtroTipo === tipo && styles.filterButtonTextActive]}>
-              {tipo.charAt(0).toUpperCase() + tipo.slice(1)}
+            <Text style={[styles.filterButtonText, filtroCategoria === categoria && styles.filterButtonTextActive]}>
+              {categoria.charAt(0).toUpperCase() + categoria.slice(1)}
             </Text>
           </TouchableOpacity>
         ))}
       </View>
 
       <FlatList
-        data={conquistas}
-        renderItem={renderConquista}
+        data={figurinhas}
+        renderItem={renderFigurinha}
         keyExtractor={(item) => item._id}
         contentContainerStyle={styles.listContent}
         refreshControl={
@@ -232,9 +261,9 @@ export default function ConquistasListScreen({ navigation }: ConquistasListScree
         onEndReachedThreshold={0.5}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Ionicons name="trophy-outline" size={64} color={theme.colors.border} />
+            <Ionicons name="images-outline" size={64} color={theme.colors.border} />
             <Text style={styles.emptyText}>
-              Nenhuma conquista encontrada{'\n'}
+              Nenhuma figurinha encontrada{'\n'}
               Toque no + para criar a primeira!
             </Text>
           </View>
@@ -302,7 +331,7 @@ const styles = StyleSheet.create({
     borderBottomColor: theme.colors.border,
   },
   filterButton: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1,
@@ -314,7 +343,7 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.primary,
   },
   filterButtonText: {
-    fontSize: 14,
+    fontSize: 12,
     color: theme.colors.textSecondary,
     fontWeight: '500',
   },
@@ -347,8 +376,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
   },
+  numeroContainer: {
+    width: 50,
+    height: 50,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  numeroText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: theme.colors.white,
+  },
   cardInfo: {
-    marginLeft: 12,
     flex: 1,
   },
   cardTitle: {
@@ -357,17 +398,23 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     marginBottom: 2,
   },
-  cardCategoria: {
+  cardPonto: {
     fontSize: 12,
     color: theme.colors.textSecondary,
-    textTransform: 'capitalize',
   },
-  tipoBadge: {
-    paddingHorizontal: 10,
+  badgesContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  categoriaBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
+    gap: 4,
   },
-  tipoText: {
+  categoriaText: {
     fontSize: 10,
     fontWeight: 'bold',
     color: theme.colors.white,
@@ -382,6 +429,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 16,
     marginBottom: 12,
+    flexWrap: 'wrap',
   },
   detailItem: {
     flexDirection: 'row',
