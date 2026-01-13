@@ -213,11 +213,11 @@ export default function UsersListScreen({ navigation }: UsersListScreenProps) {
         <View
           style={[
             styles.statusBadge,
-            { backgroundColor: item.banido ? '#F44336' : item.ativo ? '#4CAF50' : '#9E9E9E' },
+            { backgroundColor: item.banido ? '#F44336' : (item.ativo ?? true) ? '#4CAF50' : '#9E9E9E' },
           ]}
         >
           <Text style={styles.statusText}>
-            {item.banido ? 'Banido' : item.ativo ? 'Ativo' : 'Inativo'}
+            {item.banido ? 'Banido' : (item.ativo ?? true) ? 'Ativo' : 'Inativo'}
           </Text>
         </View>
         <Text style={styles.dateText}>

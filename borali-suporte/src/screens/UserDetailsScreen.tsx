@@ -203,11 +203,11 @@ export default function UserDetailsScreen({ navigation, route }: UserDetailsScre
           <View
             style={[
               styles.statusBadgeLarge,
-              { backgroundColor: user.banido ? '#F44336' : user.ativo ? '#4CAF50' : '#9E9E9E' },
+              { backgroundColor: user.banido ? '#F44336' : (user.ativo ?? true) ? '#4CAF50' : '#9E9E9E' },
             ]}
           >
             <Text style={styles.statusTextLarge}>
-              {user.banido ? 'BANIDO' : user.ativo ? 'ATIVO' : 'INATIVO'}
+              {user.banido ? 'BANIDO' : (user.ativo ?? true) ? 'ATIVO' : 'INATIVO'}
             </Text>
           </View>
         </View>

@@ -467,6 +467,23 @@ npx expo build:ios
 
 ---
 
+### Sprint 3 - Gestão de Usuários (Semanas 7-8) ✅
+
+#### Backend
+- ✅ Expansão do model Usuario (gamificação, controle, estatísticas)
+- ✅ Controller com 6 métodos admin (listar, buscarPorId, banir, desbanir, estatisticas, deletar)
+- ✅ Rotas protegidas com authMiddleware
+- ✅ Deploy no Vercel
+
+#### Frontend
+- ✅ UsersService (7 interfaces, 6 métodos)
+- ✅ UsersListScreen (busca, filtros, paginação, ban/unban)
+- ✅ UserDetailsScreen (perfil completo, estatísticas, info de banimento)
+- ✅ UsersStackNavigator com tipos TypeScript
+- ✅ Badge de status com backward compatibility (nullish coalescing)
+
+---
+
 ### Sprint 4 - Integração (Semanas 9-10)
 
 #### 1. Notificações Push
@@ -536,6 +553,6 @@ npx expo build:ios
 
 ---
 
-**Última Atualização:** 09/01/2026  
-**Versão:** 0.4.0-alpha  
-**Sprint 2 Concluída:** Sistema de Cupons 100% Funcional ✅
+**Última Atualização:** 13/01/2026  
+**Versão:** 0.5.0-alpha  
+**Sprint 3 Concluída:** Gestão de Usuários 100% Funcional ✅
