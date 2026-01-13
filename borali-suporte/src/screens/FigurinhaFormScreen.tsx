@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   StyleSheet,
   Switch,
+  Image
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -15,9 +16,11 @@ import { RouteProp } from '@react-navigation/native';
 import { Picker } from '@react-native-picker/picker';
 import { theme } from '../styles/theme';
 import figurinhasService, { FigurinhaFormData } from '../services/figurinhasService';
+import * as ImagePicker from 'expo-image-picker';
 import { errorService } from '../services/errorService';
 
-// TODO: importar pontosService para buscar pontos de interesse
+
+import { pontosService } from '../services/pontosService';
 
 // type para ponto de interesse
 interface PontoInteresse {
@@ -39,6 +42,24 @@ const CATEGORIAS = [
 ];
 
 export default function FigurinhaFormScreen({ navigation, route }: FigurinhaFormScreenProps) {
+    // Função para selecionar imagem
+    const handleSelecionarImagem = async () => {
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permissionResult.granted) {
+        errorService.showWarning('Permissão para acessar a galeria é necessária.');
+        return;
+      }
+      const pickerResult = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        quality: 0.7,
+        base64: true,
+      });
+      if (!pickerResult.canceled && pickerResult.assets && pickerResult.assets.length > 0) {
+        setImagemUri(pickerResult.assets[0].uri);
+        setImagemBase64(pickerResult.assets[0].base64 || null);
+      }
+    };
   const { figurinhaId } = route.params || {};
   const isEdit = !!figurinhaId;
 
@@ -55,6 +76,8 @@ export default function FigurinhaFormScreen({ navigation, route }: FigurinhaForm
   const [pontos, setPontos] = useState('');
   const [ativo, setAtivo] = useState(true);
   const [pontosInteresseList, setPontosInteresseList] = useState<PontoInteresse[]>([]);
+  const [imagemUri, setImagemUri] = useState<string | null>(null);
+  const [imagemBase64, setImagemBase64] = useState<string | null>(null);
 
   useEffect(() => {
     if (isEdit) {
@@ -85,13 +108,10 @@ export default function FigurinhaFormScreen({ navigation, route }: FigurinhaForm
 
   const carregarPontosInteresse = async () => {
     try {
-      // TODO: trocar por chamada real ao pontosService.listar()
-      // Exemplo mock:
-      setPontosInteresseList([
-        { _id: '1', nome: 'Praça Central' },
-        { _id: '2', nome: 'Museu Histórico' },
-        { _id: '3', nome: 'Parque das Águas' },
-      ]);
+      const resp = await pontosService.listar({ status: 'ativo', limit: 100 });
+      setPontosInteresseList(
+        (resp.pontos || []).map((p: any) => ({ _id: p._id, nome: p.nome }))
+      );
     } catch (error) {
       errorService.showError(error);
     }
@@ -115,6 +135,14 @@ export default function FigurinhaFormScreen({ navigation, route }: FigurinhaForm
 
   const handleSalvar = async () => {
     if (!validarCampos()) return;
+    if (!imagemBase64) {
+      errorService.showWarning('Imagem é obrigatória');
+      return;
+    }
+    if (!pontoInteresse) {
+      errorService.showWarning('Selecione um ponto de interesse');
+      return;
+    }
     try {
       setSalvando(true);
       const dados: FigurinhaFormData = {
@@ -124,9 +152,9 @@ export default function FigurinhaFormScreen({ navigation, route }: FigurinhaForm
         pontoInteresse: pontoInteresse || '',
         categoria: categoria || '',
         serie: serie || '',
-        imagem: '', // valor padrão vazio
-        condicaoObtencao: { tipo: 'checkin' }, // valor padrão válido
-        lancamento: '', // valor padrão vazio
+        imagem: imagemBase64,
+        condicaoObtencao: { tipo: 'checkin' },
+        lancamento: '',
         pontuacao: pontos ? parseInt(pontos) : 0,
         ativo,
       };
@@ -165,6 +193,22 @@ export default function FigurinhaFormScreen({ navigation, route }: FigurinhaForm
         <View style={styles.placeholder} />
       </View>
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        <View style={styles.section}>
+          <Text style={styles.label}>Imagem</Text>
+          {imagemUri ? (
+            <View style={{ alignItems: 'center', marginBottom: 12 }}>
+              <Image source={{ uri: imagemUri }} style={{ width: 120, height: 120, borderRadius: 12 }} />
+              <TouchableOpacity onPress={() => { setImagemUri(null); setImagemBase64(null); }} style={{ marginTop: 8 }}>
+                <Text style={{ color: theme.colors.error }}>Remover imagem</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <TouchableOpacity style={styles.imagePickerButton} onPress={handleSelecionarImagem}>
+              <Ionicons name="image-outline" size={32} color={theme.colors.primary} />
+              <Text style={{ color: theme.colors.primary, marginTop: 4 }}>Selecionar imagem</Text>
+            </TouchableOpacity>
+          )}
+        </View>
         <View style={styles.section}>
           <Text style={styles.label}>Número *</Text>
           <TextInput
@@ -354,6 +398,16 @@ const styles = StyleSheet.create({
   switchLabel: {
     fontSize: 14,
     color: theme.colors.text,
+  },
+  imagePickerButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    borderWidth: 1,
+    borderColor: theme.colors.primary,
+    borderRadius: 12,
+    marginBottom: 12,
+    backgroundColor: theme.colors.white,
   },
   footer: {
     flexDirection: 'row',
